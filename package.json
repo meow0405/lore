@@ -1,0 +1,18 @@
+{
+  "name": "shop-analyzer",
+  "version": "1.0.0",
+  "description": "Enterprise Tree-sitter and Git repository analytics engine.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.21.0",
+    "tree-sitter-typescript": "^0.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.3.3"
+  }
+}
