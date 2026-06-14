@@ -1,0 +1,486 @@
+{
+  "architecture": {
+    "subsystems": [
+      {
+        "name": "Orchestrator / Entry Point",
+        "confidence": 95,
+        "evidence": [
+          "architecture-explorer\\main.py imports 10 internal modules: git_miner, subsystem_detector, milestone_finder, source_validator, llm_generator, commit_analyzer, ownership_analyzer, temporal_analyzer, dependency_graph, heatmap_engine",
+          "main.py is the sole hub that fans out to every other module; no other module imports main.py",
+          "Uses sys, json, os for CLI/IO entry concerns"
+        ]
+      },
+      {
+        "name": "Data Ingestion (Git Mining)",
+        "confidence": 92,
+        "evidence": [
+          "architecture-explorer\\git_miner.py depends on subprocess and json \u2014 the only module shelling out to the external 'git' tool",
+          "Provides raw data consumed by downstream analyzers (referenced by main.py orchestration)",
+          "No inbound dependencies from other internal modules (leaf in the import graph)"
+        ]
+      },
+      {
+        "name": "Source Validation",
+        "confidence": 85,
+        "evidence": [
+          "architecture-explorer\\source_validator.py uses only os and stdlib \u2014 pure file-system validation concern",
+          "Listed among main.py's direct imports, executed early in the pipeline",
+          "source_validation.confirmed reports discovered root directories: architecture-explorer, lore_website"
+        ]
+      },
+      {
+        "name": "Static Analysis (Dependency / Subsystem Detection)",
+        "confidence": 90,
+        "evidence": [
+          "architecture-explorer\\dependency_graph.py imports ast and os \u2014 uniquely performs AST-based static analysis",
+          "architecture-explorer\\subsystem_detector.py imports subprocess, os, collections \u2014 combines filesystem + git for clustering",
+          "Both modules are leaf-level analyzers with no outbound edges to other internal modules"
+        ]
+      },
+      {
+        "name": "Commit / Ownership / Temporal Analytics",
+        "confidence": 88,
+        "evidence": [
+          "commit_analyzer.py: stdlib collections \u2014 commit metric computation",
+          "ownership_analyzer.py: stdlib collections \u2014 author/ownership aggregation",
+          "temporal_analyzer.py: datetime + collections \u2014 time-series analysis",
+          "All three share the same dependency profile (pure data transformation, no I/O, no subprocess), forming a cohesive analytical layer"
+        ]
+      },
+      {
+        "name": "Milestone Discovery",
+        "confidence": 82,
+        "evidence": [
+          "milestone_finder.py imports re (regex) \u2014 text/pattern-based milestone extraction",
+          "Standalone leaf module with unique dependency footprint distinguishing it from numeric analyzers"
+        ]
+      },
+      {
+        "name": "Output / Presentation",
+        "confidence": 88,
+        "evidence": [
+          "heatmap_engine.py: collections + os \u2014 risk-heatmap generation",
+          "mermaid_generator.py: json + os + sys + urllib.request \u2014 diagram emission",
+          "llm_generator.py: json + os + urllib.request + urllib.error \u2014 network-bound LLM-backed description generation",
+          "All three modules produce downstream artifacts (heatmap, mermaid, natural-language) and are sinks in the import graph"
+        ]
+      },
+      {
+        "name": "Vendored Third-Party (KaTeX)",
+        "confidence": 80,
+        "evidence": [
+          "Five files under architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\... exist in the dependency graph",
+          "These are build-time scripts for the KaTeX npm package (fontTools, parse_tfm), not part of the project's own logic",
+          "No internal module of architecture-explorer imports from these katex files; they are isolated in node_modules"
+        ]
+      }
+    ],
+    "patterns": [
+      {
+        "name": "Pipe-and-Filter / Pipeline",
+        "confidence": 90,
+        "evidence": [
+          "main.py acts as the single orchestrator sequentially invoking ingestion \u2192 analysis \u2192 output modules (10 direct imports)",
+          "Each non-orchestrator module is a leaf in the internal import graph (no inter-analyzer imports), enabling independent composability",
+          "Modules are cohesive by concern: mining, validating, analyzing, rendering"
+        ]
+      },
+      {
+        "name": "Layered Architecture",
+        "confidence": 85,
+        "evidence": [
+          "Layer 1 (Orchestration): main.py",
+          "Layer 2 (Ingestion): git_miner.py, source_validator.py \u2014 only modules interacting with the external world (subprocess, filesystem)",
+          "Layer 3 (Analysis): commit_analyzer, ownership_analyzer, temporal_analyzer, dependency_graph, subsystem_detector, milestone_finder \u2014 pure stdlib-based transformations",
+          "Layer 4 (Output): heatmap_engine, mermaid_generator, llm_generator \u2014 emit final artifacts, with llm_generator uniquely network-bound"
+        ]
+      },
+      {
+        "name": "Modular Monolith (Single-Process Tool)",
+        "confidence": 88,
+        "evidence": [
+          "All modules live under one top-level package 'architecture-explorer'",
+          "No inter-module imports among analyzer/output modules \u2014 strict separation enforced by the dependency graph edges",
+          "Single Python entry point (main.py) suggests a CLI tool rather than a long-running service"
+        ]
+      },
+      {
+        "name": "Fan-out Hub (Orchestrator Anti-pattern Risk)",
+        "confidence": 75,
+        "evidence": [
+          "main.py has 10 outbound edges to internal modules \u2014 a single point of high coupling",
+          "No fa\u00e7ade or coordinator abstraction mediates between main.py and the analyzers"
+        ]
+      }
+    ],
+    "layers": [
+      {
+        "name": "Entry / Orchestration",
+        "confidence": 95,
+        "evidence": [
+          "architecture-explorer\\main.py imports sys, json, os and 10 internal modules"
+        ]
+      },
+      {
+        "name": "Data Ingestion",
+        "confidence": 92,
+        "evidence": [
+          "git_miner.py: subprocess, json",
+          "source_validator.py: os"
+        ]
+      },
+      {
+        "name": "Analytical Core",
+        "confidence": 90,
+        "evidence": [
+          "commit_analyzer.py (collections), ownership_analyzer.py (collections), temporal_analyzer.py (datetime, collections), dependency_graph.py (ast, os), subsystem_detector.py (subprocess, os, collections), milestone_finder.py (re)"
+        ]
+      },
+      {
+        "name": "Output / Rendering",
+        "confidence": 88,
+        "evidence": [
+          "heatmap_engine.py (collections, os), mermaid_generator.py (json, os, sys, urllib.request), llm_generator.py (json, os, urllib.request, urllib.error)"
+        ]
+      },
+      {
+        "name": "External / Vendored (Out of Core Scope)",
+        "confidence": 80,
+        "evidence": [
+          "katex/src/fonts/generate_fonts.py, katex/src/metrics/extract_tfms.py, extract_ttfs.py, format_json.py, parse_tfm.py located under node_modules \u2014 third-party build scripts"
+        ]
+      }
+    ]
+  },
+  "heatmap": {
+    "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\fonts\\generate_fonts.py": {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\fonts\\generate_fonts.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\extract_tfms.py": {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\extract_tfms.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\main.py": {
+      "file": "architecture-explorer\\main.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\milestone_finder.py": {
+      "file": "architecture-explorer\\milestone_finder.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\mermaid_generator.py": {
+      "file": "architecture-explorer\\mermaid_generator.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\ownership_analyzer.py": {
+      "file": "architecture-explorer\\ownership_analyzer.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\temporal_analyzer.py": {
+      "file": "architecture-explorer\\temporal_analyzer.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\git_miner.py": {
+      "file": "architecture-explorer\\git_miner.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\extract_ttfs.py": {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\extract_ttfs.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\heatmap_engine.py": {
+      "file": "architecture-explorer\\heatmap_engine.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\parse_tfm.py": {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\parse_tfm.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\llm_generator.py": {
+      "file": "architecture-explorer\\llm_generator.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\source_validator.py": {
+      "file": "architecture-explorer\\source_validator.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\dependency_graph.py": {
+      "file": "architecture-explorer\\dependency_graph.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\format_json.py": {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\format_json.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\subsystem_detector.py": {
+      "file": "architecture-explorer\\subsystem_detector.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    },
+    "architecture-explorer\\commit_analyzer.py": {
+      "file": "architecture-explorer\\commit_analyzer.py",
+      "riskScore": 1.0,
+      "riskLevel": "Safe",
+      "reasons": [],
+      "confidence": 90
+    }
+  },
+  "hotspots": [],
+  "impactPredictions": [
+    {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\fonts\\generate_fonts.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\extract_tfms.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\main.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\milestone_finder.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\mermaid_generator.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\ownership_analyzer.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\temporal_analyzer.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\git_miner.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\extract_ttfs.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\heatmap_engine.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\parse_tfm.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\llm_generator.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\source_validator.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\dependency_graph.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\metrics\\format_json.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\subsystem_detector.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    },
+    {
+      "file": "architecture-explorer\\commit_analyzer.py",
+      "impact": {
+        "directFiles": [],
+        "indirectFiles": [],
+        "subsystems": [],
+        "estimatedRisk": 1.0
+      }
+    }
+  ],
+  "riskClusters": [
+    {
+      "name": "Orchestrator Hub Coupling",
+      "description": "main.py directly imports 10 internal modules with no fa\u00e7ade. Any pipeline restructure requires editing the entry point, raising change-amplification risk."
+    },
+    {
+      "name": "Network-Bound Output Module",
+      "description": "llm_generator.py and mermaid_generator.py use urllib for outbound HTTP. They are the only modules that can fail due to network conditions, making the pipeline non-deterministic and hard to test offline."
+    },
+    {
+      "name": "Vendored Third-Party Bloat",
+      "description": "Five KaTeX node_modules .py files (font generation, TFM/TF metric extraction) appear in the analysis scope. These are not project logic and inflate the analyzed surface area; they should be excluded from architectural mining."
+    },
+    {
+      "name": "Empty Temporal / Commit / Ownership Data",
+      "description": "commit_metrics, ownership_metrics, temporal_metrics, milestones, and commit history are all empty. Architecture is inferred solely from static dependency edges; evolutionary patterns (churn hotspots, ownership concentration, milestone boundaries) cannot be validated. Confidence is therefore bounded by static evidence only."
+    },
+    {
+      "name": "Subsystem / Milestone Data Sparsity",
+      "description": "subsystems.subsystems, major_contributors, and milestones are empty lists. The detected subsystem boundaries above are derived strictly from import-graph cohesion, not from historical commit clustering."
+    }
+  ],
+  "recommendations": [
+    {
+      "action": "Introduce a Pipeline/Facade layer between main.py and the analyzers",
+      "target": "architecture-explorer\\main.py",
+      "reason": "main.py is a fan-out hub importing 10 modules directly; a coordinator class would isolate orchestration from the entry point and improve testability."
+    },
+    {
+      "action": "Exclude node_modules (and other vendored third-party directories) from architectural analysis",
+      "target": "architecture-explorer\\architecture-explorer\\webview-ui\\node_modules\\katex\\src\\",
+      "reason": "KaTeX build scripts are not part of the project's own architecture and produce noise in the dependency graph."
+    },
+    {
+      "action": "Inject an HTTP client abstraction for outbound calls",
+      "target": "architecture-explorer\\llm_generator.py, architecture-explorer\\mermaid_generator.py",
+      "reason": "Direct urllib usage makes the pipeline non-deterministic and untestable offline; a swappable client enables offline/CI mode and retry policy."
+    },
+    {
+      "action": "Add an interface/contract layer among analyzer modules (commit_analyzer, ownership_analyzer, temporal_analyzer, dependency_graph, subsystem_detector, milestone_finder)",
+      "target": "architecture-explorer\\*.py (analyzers)",
+      "reason": "Currently these modules are loosely coupled only by main.py's orchestration; formalizing a common input/output contract would prevent drift and enable parallel analyzer development."
+    },
+    {
+      "action": "Capture and persist commit, ownership, and temporal metrics for the analyzed repositories",
+      "target": "architecture-explorer\\git_miner.py, architecture-explorer\\commit_analyzer.py, architecture-explorer\\ownership_analyzer.py, architecture-explorer\\temporal_analyzer.py",
+      "reason": "All four metric collections are empty in the supplied data; without these, the architecture model cannot leverage evolutionary evidence (churn, bus factor, milestone-driven refactors) and remains purely static."
+    },
+    {
+      "action": "Surface structural validation as a hard gate before output rendering",
+      "target": "architecture-explorer\\source_validator.py",
+      "reason": "source_validator currently runs alongside other modules without explicit ordering in the import graph; promoting it to a pre-render gate prevents generating diagrams/mermaid/LLM output for malformed or unparseable repositories."
+    }
+  ]
+}

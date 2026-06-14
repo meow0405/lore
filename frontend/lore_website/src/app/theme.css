@@ -1,0 +1,47 @@
+/* src/app/theme.css */
+
+/* Glass‑morphism utility */
+.glass {
+  background: var(--color-bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+/* Hover glow for buttons */
+.hover-glow {
+  transition: box-shadow var(--transition-speed);
+}
+.hover-glow:hover {
+  box-shadow: 0 0 12px var(--color-primary);
+}
+
+/* HUD overlay – absolute container for decorative elements */
+.hud-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Small HUD label (decorative text) */
+.hud-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* Orbital line (thin geometry) */
+.orbital-line {
+  position: absolute;
+  border: 1px solid rgba(74, 158, 255, 0.4);
+  border-radius: 50%;
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
