@@ -1,0 +1,28 @@
+# Lore - Development Requirements
+# Install with: pip install -r requirements-dev.txt
+
+# All production dependencies
+-r requirements.txt
+
+# Testing
+pytest>=8.2.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+
+# Code Quality
+ruff>=0.5.0
+black>=24.1.0
+isort>=5.13.0
+
+# Type Checking
+mypy>=1.8.0
+types-requests>=2.31.0
+
+# Documentation
+sphinx>=7.0.0
+
+# Optional: Code parsing with tree-sitter
+# Uncomment if using advanced code analysis features
+# tree-sitter>=0.22.0
+# tree-sitter-python
+# tree-sitter-typescript
